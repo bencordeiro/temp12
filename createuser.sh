@@ -75,65 +75,16 @@ while getopts ":u:c:d:s:ap:Pi:M:W:" opt; do
   esac
 done
 
-# Validation Checks
-
-# Require username parameter
-if [ -z "$username" ]; then
-  echo "Error: The -u (username) is required."
-  usage
-fi
-
-# Validate inactive days
-if [ -n "$inactive_days" ] && [ "$inactive_days" -le 0 ]; then
-  echo "Error: -i (inactive days) must be greater than 0."
-  exit 2
-fi
-
-# Validate max days
-if [ -n "$max_days" ] && [ "$max_days" -lt 20 ]; then
-  echo "Error: -M (max days) must be at least 20."
-  exit 3
-fi
-
-# Validate warn days
-if [ -n "$warn_days" ] && [ "$warn_days" -le 0 ]; then
-  echo "Error: -W (warn days) must be greater than 0."
-  exit 4
-fi
-
-# Build useradd command
-cmd="useradd"
-
-[ -n "$fullname" ] && cmd+=" -c \"$fullname\""
-[ -n "$homedir" ] && cmd+=" -d $homedir"
-cmd+=" -s $shell $username"
-
-# Create user
-if eval "$cmd"; then
-  echo "User $username created successfully."
-
-  # Assign to sudo group if -a is set
-  [ "$admin" = true ] && usermod -aG sudo "$username"
-
-  # Set password if -p or -P is specified
-  if [ -n "$password" ]; then
-    echo "$username:$password" | chpasswd
-  elif [ "$gen_password" = true ]; then
-    rand_password=$(apg -n 1 -m 10 -x 10)
-    echo "$username:$rand_password" | chpasswd
-    echo -e "Password for $username:\t$rand_password"
-  else
-    passwd -l "$username"  # Lock account if neither is provided
-  fi
-
-  # Apply password policies
-  [ -n "$inactive_days" ] && chage -I "$inactive_days" "$username"
-  [ -n "$max_days" ] && chage -M "$max_days" "$username"
-  [ -n "$warn_days" ] && chage -W "$warn_days" "$username"
-
-else
-  echo "Failed to create user $username."
-  exit 5
-fi
+# Test variable assignments
+echo "Username: $username"
+echo "Fullname: $fullname"
+echo "Home Directory: $homedir"
+echo "Shell: $shell"
+echo "Admin: $admin"
+echo "Password: ${password:+Set}" # Hide actual password
+echo "Generate Password: $gen_password"
+echo "Inactive Days: $inactive_days"
+echo "Max Days: $max_days"
+echo "Warn Days: $warn_days"
 
 exit 0

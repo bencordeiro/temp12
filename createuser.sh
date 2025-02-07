@@ -10,7 +10,7 @@ usage() {
   echo "  -c FULLNAME     Full name."
   echo "  -d HOMEDIR      Home directory."
   echo "  -s SHELL        Login shell."
-  echo "  -a              Assign admin/sudo"
+  echo "  -a              Assign admin/sudo."
   echo "  -p PASSWORD     Set password."
   echo "  -P              Generate a random password."
   echo "  -i DAYS         Set inactive days before expiration."
@@ -29,7 +29,7 @@ fi
 username=""
 fullname=""
 homedir=""
-shell=""
+shell="/bin/bash"  # default shell
 admin=false
 password=""
 gen_password=false
@@ -65,8 +65,7 @@ while getopts ":u:c:d:s:ap:Pi:M:W:" opt; do
       fi
       gen_password=true
       ;;
-    i) inactive_days="$OPTARG" 
-      ;;
+    i) inactive_days="$OPTARG" ;;
     M) max_days="$OPTARG" ;;
     W) warn_days="$OPTARG" ;;
     \?) # Invalid Option
@@ -107,9 +106,7 @@ cmd="useradd"
 
 [ -n "$fullname" ] && cmd+=" -c \"$fullname\""
 [ -n "$homedir" ] && cmd+=" -d $homedir"
-[ -n "$shell" ] && cmd+=" -s $shell" || cmd+=" -s /bin/bash"
-
-cmd+=" $username"
+cmd+=" -s $shell $username"
 
 # Create user
 if eval "$cmd"; then
@@ -124,7 +121,7 @@ if eval "$cmd"; then
   elif [ "$gen_password" = true ]; then
     rand_password=$(apg -n 1 -m 10 -x 10)
     echo "$username:$rand_password" | chpasswd
-    echo "Password for $username: $rand_password"
+    echo -e "Password for $username:\t$rand_password"
   else
     passwd -l "$username"  # Lock account if neither is provided
   fi
@@ -136,5 +133,7 @@ if eval "$cmd"; then
 
 else
   echo "Failed to create user $username."
-  exit 1
+  exit 5
 fi
+
+exit 0

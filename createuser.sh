@@ -42,10 +42,22 @@ while getopts ":u:c:d:s:ap:Pi:M:W:" opt; do
   case ${opt} in
     u) username="$OPTARG" ;;
     c) fullname="$OPTARG" ;;
-    d) homedir="$OPTARG" ;;
-    s) shell="$OPTARG" ;;
+    d)
+      if [[ -z "$OPTARG" || "$OPTARG" =~ ^- ]]; then
+        echo "Error: -d requires a home directory argument."
+        usage
+      fi
+      homedir="$OPTARG"
+      ;;
+    s)
+      if [[ -z "$OPTARG" || "$OPTARG" =~ ^- ]]; then
+        echo "Error: -s requires a shell argument."
+        usage
+      fi
+      shell="$OPTARG"
+      ;;
     a) admin=true ;;
-    p) 
+    p)
       if [[ -z "$OPTARG" || "$OPTARG" =~ ^- ]]; then
         echo "Error: -p requires a password argument."
         usage
@@ -57,7 +69,7 @@ while getopts ":u:c:d:s:ap:Pi:M:W:" opt; do
       fi
       password="$OPTARG"
       ;;
-    P) 
+    P)
       if [ -n "$password" ]; then
         echo "Error: Cannot use both -p (password) and -P (generate password) together."
         usage
@@ -65,16 +77,16 @@ while getopts ":u:c:d:s:ap:Pi:M:W:" opt; do
       fi
       gen_password=true
       ;;
-    i) inactive_days="$OPTARG" 
-      ;;
+    i) inactive_days="$OPTARG" ;;
     M) max_days="$OPTARG" ;;
     W) warn_days="$OPTARG" ;;
-    \?) # Invalid Option
+    \?)
       echo "Error: Invalid option -$OPTARG"
       usage
       ;;
   esac
 done
+
 
 # Validation Checks
 

@@ -125,7 +125,6 @@ cmd+=" $username"
 
 # Create user
 if eval "$cmd"; then
-  echo "User $username created successfully."
 
   # Assign to sudo group if -a is set
   [ "$admin" = true ] && usermod -aG sudo "$username"
